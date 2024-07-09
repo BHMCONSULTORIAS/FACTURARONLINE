@@ -1,0 +1,466 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACTURACIÓN ONLINE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .listado {
+            margin-top: 20px;
+        }
+        .listado-item {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FACTURACIÓN ONLINE</h1>
+        <button onclick="toggleAdmisiones()">ADMISIONES</button>
+        <button onclick="toggleFacturacion()">FACTURACIÓN</button>
+        
+        <!-- Módulo de Admisiones -->
+        <div id="admisiones" class="hidden">
+            <h2>Admisiones</h2>
+            <button onclick="showForm()">Agregar</button>
+            <div id="formulario" class="hidden">
+                <form id="admisionesForm">
+                    <label for="tipoDocumento">Tipo de documento</label>
+                    <select id="tipoDocumento" required>
+                        <option value="CC">CC</option>
+                        <option value="TI">TI</option>
+                        <option value="RC">RC</option>
+                        <option value="CE">CE</option>
+                    </select>
+                    <label for="numeroDocumento">Número de Documento</label>
+                    <input type="number" id="numeroDocumento" required>
+                    <label for="nombres">Nombres</label>
+                    <input type="text" id="nombres" required>
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" required>
+                    <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                    <input type="date" id="fechaNacimiento" required>
+                    <label for="edad">Edad</label>
+                    <input type="number" id="edad" readonly>
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" required>
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion" required>
+                    <label for="planBeneficios">Plan de beneficios</label>
+                    <input type="text" id="planBeneficios" required>
+                    <label for="entidad">Entidad</label>
+                    <input type="text" id="entidad" required>
+                    <button type="button" onclick="confirmarIngreso()">Confirmar</button>
+                </form>
+            </div>
+            <div class="listado" id="listadoIngresos">
+                <h3>Listado de Ingresos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha del Documento</th>
+                            <th>Nombre del Paciente</th>
+                            <th>Número de Ingreso</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaIngresos">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Módulo de Facturación -->
+        <div id="facturacion" class="hidden">
+            <h2>Facturación</h2>
+            <div class="listado" id="listadoFacturacion">
+                <h3>Listado de Ingresos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Número de Ingreso</th>
+                            <th>Fecha del Documento</th>
+                            <th>Número de Documento</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaFacturacion">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Módulo de Liquidación de Ingreso -->
+        <div id="liquidacion" class="hidden">
+            <h2>Liquidación de Ingreso</h2>
+            <div id="datosPaciente" class="hidden">
+                <h3>Datos del Paciente</h3>
+                <p><strong>Nombre:</strong> <span id="nombrePacienteLiquidacion"></span></p>
+                <p><strong>Tipo de Documento:</strong> <span id="tipoDocumentoLiquidacion"></span></p>
+                <p><strong>Número de Documento:</strong> <span id="numeroDocumentoLiquidacion"></span></p>
+            </div>
+            <button onclick="agregarServicio()">+</button>
+            <div id="serviciosForm" class="hidden">
+                <label for="codigoServicio">Código del servicio</label>
+                <input type="text" id="codigoServicio" list="listaCodigos">
+                <datalist id="listaCodigos">
+                    <option value="001">Consulta de Urgencias</option>
+                    <option value="002">Consulta especialista</option>
+                    <option value="003">Insumos</option>
+                </datalist>
+                <label for="descripcionServicio">Descripción del servicio</label>
+                <input type="text" id="descripcionServicio" readonly>
+                <label for="valorServicio">Valor del servicio</label>
+                <input type="text" id="valorServicio" readonly>
+                <label for="valorAjuste">Valor Ajuste</label>
+                <input type="number" id="valorAjuste">
+                <button type="button" onclick="confirmarServicio()">Confirmar</button>
+            </div>
+            <table id="tablaServiciosLiquidacion" style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Valor U</th>
+                        <th>Valor Ajus</th>
+                        <th>Valor Neto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button onclick="confirmarFactura()">Confirmar</button>
+            <button onclick="salirLiquidacion()">Salir</button>
+        </div>
+
+        <!-- Mensaje de confirmación de factura -->
+        <div id="mensajeConfirmacion" class="hidden">
+            <p>Ingreso Facturado Correctamente. No. <span id="numeroFacturaConfirmacion"></span></p>
+            <button onclick="cerrarMensaje()">Listo</button>
+        </div>
+    </div>
+
+    <script>
+        let consecutivo = 1;
+        let numeroFactura = 1;
+        let ingresos = [];
+        let facturas = [];
+        let jsonCUPS = {};
+
+        window.onload = function() {
+            // Ruta local al JSON en tu sistema
+            const urlJsonCUPS = 'E:/DOC/datos.json';
+
+            fetch(urlJsonCUPS)
+                .then(response => response.json())
+                .then(data => {
+                    jsonCUPS = data; // Guardar datos del JSON en jsonCUPS
+                })
+                .catch(error => {
+                    console.error('Error cargando el JSON:', error);
+                });
+        }
+
+        function toggleAdmisiones() {
+            const admisiones = document.getElementById('admisiones');
+            admisiones.classList.toggle('hidden');
+            actualizarListadoIngresos();
+        }
+
+        function toggleFacturacion() {
+            const facturacion = document.getElementById('facturacion');
+            facturacion.classList.toggle('hidden');
+            actualizarListadoFacturacion();
+        }
+
+        function showForm() {
+            const formulario = document.getElementById('formulario');
+            formulario.classList.toggle('hidden');
+        }
+
+        function confirmarIngreso() {
+            const form = document.getElementById('admisionesForm');
+            const tipoDocumento = form.tipoDocumento.value;
+            const numeroDocumento = form.numeroDocumento.value;
+            const nombres = form.nombres.value;
+            const apellidos = form.apellidos.value;
+            const fechaNacimiento = form.fechaNacimiento.value;
+            const edad = form.edad.value;
+            const telefono = form.telefono.value;
+            const direccion = form.direccion.value;
+            const planBeneficios = form.planBeneficios.value;
+            const entidad = form.entidad.value;
+
+            const ingreso = {
+                numeroIngreso: consecutivo,
+                fechaDocumento: obtenerFechaActual(),
+                tipoDocumento,
+                numeroDocumento,
+                nombres,
+                apellidos,
+                fechaNacimiento,
+                edad,
+                telefono,
+                direccion,
+                planBeneficios,
+                entidad,
+                estado: 'Ingresado'
+            };
+
+            ingresos.push(ingreso);
+            consecutivo++;
+            form.reset();
+            actualizarListadoIngresos();
+        }
+
+        function obtenerFechaActual() {
+            const now = new Date();
+            const year = now.getFullYear();
+            let month = now.getMonth() + 1;
+            let day = now.getDate();
+
+            if (month < 10) {
+                month = '0' + month;
+            }
+
+            if (day < 10) {
+                day = '0' + day;
+            }
+
+            return `${year}-${month}-${day}`;
+        }
+
+        function actualizarListadoIngresos() {
+            const tabla = document.getElementById('tablaIngresos');
+            tabla.innerHTML = '';
+
+            ingresos.forEach(ingreso => {
+                const row = tabla.insertRow();
+                row.innerHTML = `
+                    <td>${ingreso.fechaDocumento}</td>
+                    <td>${ingreso.nombres} ${ingreso.apellidos}</td>
+                    <td>${ingreso.numeroIngreso}</td>
+                    <td>${ingreso.estado}</td>
+                    <td>
+                        <button onclick="liquidarIngreso(${ingreso.numeroIngreso})">Liquidar</button>
+                    </td>
+                `;
+            });
+        }
+
+        function liquidarIngreso(numeroIngreso) {
+            const ingreso = ingresos.find(ingreso => ingreso.numeroIngreso === numeroIngreso);
+
+            // Mostrar datos del paciente
+            document.getElementById('nombrePacienteLiquidacion').textContent = `${ingreso.nombres} ${ingreso.apellidos}`;
+            document.getElementById('tipoDocumentoLiquidacion').textContent = ingreso.tipoDocumento;
+            document.getElementById('numeroDocumentoLiquidacion').textContent = ingreso.numeroDocumento;
+
+            // Mostrar módulo de liquidación
+            const liquidacion = document.getElementById('liquidacion');
+            liquidacion.classList.remove('hidden');
+
+            // Ocultar módulo de admisiones
+            const admisiones = document.getElementById('admisiones');
+            admisiones.classList.add('hidden');
+        }
+
+        function agregarServicio() {
+            const serviciosForm = document.getElementById('serviciosForm');
+            serviciosForm.classList.toggle('hidden');
+        }
+
+        function confirmarServicio() {
+            const codigoServicio = document.getElementById('codigoServicio').value;
+            const servicio = jsonCUPS.find(item => item.CODIGO === codigoServicio);
+
+            if (servicio) {
+                document.getElementById('descripcionServicio').value = servicio.PROCEDIMIENTO;
+                document.getElementById('valorServicio').value = servicio.VALOR;
+            }
+
+            const servicioConfirmado = {
+                codigo: codigoServicio,
+                descripcion: servicio ? servicio.PROCEDIMIENTO : '',
+                valorUnitario: servicio ? servicio.VALOR : '',
+                valorAjuste: document.getElementById('valorAjuste').value,
+                valorNeto: servicio ? calcularValorNeto(servicio.VALOR, document.getElementById('valorAjuste').value) : ''
+            };
+
+            const tablaServicios = document.getElementById('tablaServiciosLiquidacion').getElementsByTagName('tbody')[0];
+            const row = tablaServicios.insertRow();
+            row.innerHTML = `
+                <td>${servicioConfirmado.codigo}</td>
+                <td>${servicioConfirmado.descripcion}</td>
+                <td>${servicioConfirmado.valorUnitario}</td>
+                <td>${servicioConfirmado.valorAjuste}</td>
+                <td>${servicioConfirmado.valorNeto}</td>
+            `;
+
+            // Limpiar formulario de servicios
+            const form = document.getElementById('serviciosForm');
+            form.reset();
+            form.classList.add('hidden');
+        }
+
+        function calcularValorNeto(valorUnitario, valorAjuste) {
+            return parseFloat(valorUnitario) + parseFloat(valorAjuste);
+        }
+
+        function confirmarFactura() {
+            // Generar número de factura
+            const numeroFacturaActual = numeroFactura;
+            numeroFactura++;
+
+            // Mostrar mensaje de confirmación con número de factura
+            const mensajeConfirmacion = document.getElementById('mensajeConfirmacion');
+            mensajeConfirmacion.classList.remove('hidden');
+            document.getElementById('numeroFacturaConfirmacion').textContent = numeroFacturaActual;
+
+            // Actualizar estado del ingreso a Facturado
+            const ingresoLiquidado = ingresos.find(ingreso => ingreso.estado === 'Liquidado');
+            ingresoLiquidado.estado = 'Facturado';
+
+            // Agregar factura al listado de facturas
+            facturas.push({
+                numeroFactura: numeroFacturaActual,
+                numeroIngreso: ingresoLiquidado.numeroIngreso,
+                fechaDocumento: obtenerFechaActual(),
+                numeroDocumento: ingresoLiquidado.numeroDocumento,
+                estado: 'Facturada'
+            });
+
+            // Actualizar listado de facturación
+            actualizarListadoFacturacion();
+
+            // Limpiar tabla de servicios
+            const tablaServicios = document.getElementById('tablaServiciosLiquidacion').getElementsByTagName('tbody')[0];
+            tablaServicios.innerHTML = '';
+
+            // Ocultar módulo de liquidación
+            const liquidacion = document.getElementById('liquidacion');
+            liquidacion.classList.add('hidden');
+        }
+
+        function actualizarListadoFacturacion() {
+            const tabla = document.getElementById('tablaFacturacion');
+            tabla.innerHTML = '';
+
+            facturas.forEach(factura => {
+                const row = tabla.insertRow();
+                row.innerHTML = `
+                    <td>${factura.numeroIngreso}</td>
+                    <td>${factura.fechaDocumento}</td>
+                    <td>${factura.numeroDocumento}</td>
+                    <td>${factura.estado}</td>
+                    <td>
+                        <button onclick="verDetalleFactura(${factura.numeroFactura})">Ver</button>
+                    </td>
+                `;
+            });
+        }
+
+        function verDetalleFactura(numeroFactura) {
+            const factura = facturas.find(factura => factura.numeroFactura === numeroFactura);
+
+            if (factura) {
+                // Mostrar detalles de la factura
+                alert(`Detalles de la factura No. ${factura.numeroFactura}:\n\nNúmero de Ingreso: ${factura.numeroIngreso}\nFecha del Documento: ${factura.fechaDocumento}\nNúmero de Documento: ${factura.numeroDocumento}\nEstado: ${factura.estado}`);
+            }
+        }
+
+        function salirLiquidacion() {
+            // Limpiar tabla de servicios
+            const tablaServicios = document.getElementById('tablaServiciosLiquidacion').getElementsByTagName('tbody')[0];
+            tablaServicios.innerHTML = '';
+
+            // Ocultar módulo de liquidación
+            const liquidacion = document.getElementById('liquidacion');
+            liquidacion.classList.add('hidden');
+        }
+
+        function cerrarMensaje() {
+            const mensajeConfirmacion = document.getElementById('mensajeConfirmacion');
+            mensajeConfirmacion.classList.add('hidden');
+        }
+
+        function calcularEdad(fechaNacimiento) {
+            const hoy = new Date();
+            const nacimiento = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const mes = hoy.getMonth() - nacimiento.getMonth();
+            if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            return edad;
+        }
+
+
+            document.getElementById('edad').value = edad;
+        }
+    </script>
+</body>
+</html>
